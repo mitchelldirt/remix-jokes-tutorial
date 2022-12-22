@@ -1,13 +1,28 @@
-import { LiveReload ,Outlet } from "@remix-run/react";
+import type { LinksFunction } from "@remix-run/node";
+import { Link, Outlet } from "@remix-run/react";
 
-export default function JokesRoute() {
+import stylesUrl from "~/styles/index.css";
+
+export const links: LinksFunction = () => {
+  return [{ rel: "stylesheet", href: stylesUrl }];
+};
+
+export default function IndexRoute() {
   return (
-    <div>
-      <h1>J🤪KES</h1>
-      <main>
-        <Outlet />
-        <LiveReload />
-      </main>
+    <div className="container">
+      <div className="content">
+        <h1>
+          Remix <span>Jokes!</span>
+        </h1>
+        <nav>
+          <ul>
+            <li>
+              <Link to="jokes">Read Jokes</Link>
+              <Outlet />
+            </li>
+          </ul>
+        </nav>
+      </div>
     </div>
   );
 }
