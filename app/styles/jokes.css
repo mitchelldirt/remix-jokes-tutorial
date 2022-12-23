@@ -60,6 +60,10 @@
   max-width: 12rem;
 }
 
+.jokes-error {
+  color: red;
+}
+
 .jokes-outlet {
   flex: 1;
 }
