@@ -1,6 +1,6 @@
 import type { ActionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { useActionData } from "@remix-run/react";
+import { useActionData, useParams, useSearchParams } from "@remix-run/react";
 
 import { db } from "~/utils/db.server";
 import { badRequest } from "~/utils/request.server";
@@ -113,4 +113,12 @@ export default function NewJokeRoute() {
       </form>
     </div>
   );
+}
+
+export function ErrorBoundary() {
+  return (
+    <div className="error-container">
+      <p>Something unexpected went wrong. Sorry about that.</p>
+    </div>
+  )
 }
