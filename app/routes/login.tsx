@@ -1,10 +1,10 @@
-import { ActionArgs, LinksFunction, redirect } from "@remix-run/node";
 import { Link, useActionData, useSearchParams } from "@remix-run/react";
-
 import stylesUrl from "~/styles/login.css";
 import { db } from "~/utils/db.server";
 import { badRequest } from "~/utils/request.server";
-import { login } from "~/utils/session.server";
+import { createUserSession, login, register } from "~/utils/session.server";
+
+import type { ActionArgs, LinksFunction } from '@remix-run/node'
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: stylesUrl },
@@ -35,7 +35,7 @@ export const action = async ({ request }: ActionArgs) => {
   const loginType = form.get("loginType");
   const username = form.get("username");
   const password = form.get("password");
-  const redirectTo = validateUrl(form.get("redirectTo") || "/jokes");
+  const redirectTo = validateUrl(form.get("redirectTo") as string || "/jokes");
   if (
     typeof loginType !== "string" ||
     typeof username !== "string" ||
@@ -64,13 +64,11 @@ export const action = async ({ request }: ActionArgs) => {
 
   switch (loginType) {
     case "login": {
-      const loginStatus = await login(username, password);
+      const user = await login(username, password);
       // login to get the user
       // if there's no user, return the fields and a formError
       // if there is a user, create their session and redirect to /jokes
-      if (loginStatus) {
-      }
-      if (!loginStatus) {
+      if (!user) {
         return badRequest({
           fieldErrors: null,
           fields,
@@ -78,7 +76,7 @@ export const action = async ({ request }: ActionArgs) => {
         });
       }
 
-      return redirect('http://localhost:3000/');
+      return createUserSession(user.id, "/jokes");
     }
     case "register": {
       const userExists = await db.user.findFirst({
@@ -93,11 +91,16 @@ export const action = async ({ request }: ActionArgs) => {
       }
       // create the user
       // create their session and redirect to /jokes
-      return badRequest({
-        fieldErrors: null,
-        fields,
-        formError: "Not implemented",
-      });
+      const user = await register(username, password);
+      
+      if (!user) {
+        return badRequest({
+          fieldErrors: null,
+          fields,
+          formError: `Something went wrong trying to create a new user`
+        })
+      }
+      return createUserSession(user.id, '/jokes')
     }
     default: {
       return badRequest({

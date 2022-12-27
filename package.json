@@ -9,6 +9,8 @@
     "dev": "remix dev",
     "start": "remix-serve build",
     "typecheck": "tsc -b",
+    "prismaStudio": "npx prisma studio",
+    "seedDb": "npx prisma db seed",
     "updateDb": "npx prisma db push"
   },
   "dependencies": {
