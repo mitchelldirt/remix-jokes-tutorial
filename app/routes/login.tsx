@@ -1,4 +1,4 @@
-import type { ActionArgs, LinksFunction } from "@remix-run/node";
+import { ActionArgs, LinksFunction, redirect } from "@remix-run/node";
 import { Link, useActionData, useSearchParams } from "@remix-run/react";
 
 import stylesUrl from "~/styles/login.css";
@@ -64,16 +64,21 @@ export const action = async ({ request }: ActionArgs) => {
 
   switch (loginType) {
     case "login": {
-      const loginStatus = await login(username, password)
-      console.log(loginStatus)
+      const loginStatus = await login(username, password);
       // login to get the user
       // if there's no user, return the fields and a formError
       // if there is a user, create their session and redirect to /jokes
-      return badRequest({
-        fieldErrors: null,
-        fields,
-        formError: `Not implemented ${loginStatus}`,
-      });
+      if (loginStatus) {
+      }
+      if (!loginStatus) {
+        return badRequest({
+          fieldErrors: null,
+          fields,
+          formError: `The username and/or password does not exist`,
+        });
+      }
+
+      return redirect('http://localhost:3000/');
     }
     case "register": {
       const userExists = await db.user.findFirst({
