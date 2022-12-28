@@ -1,10 +1,10 @@
-import type { ActionArgs } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
-import { useActionData, useParams, useSearchParams } from "@remix-run/react";
+import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import { redirect, json } from "@remix-run/node";
+import { Link, useActionData, useCatch } from "@remix-run/react";
 
 import { db } from "~/utils/db.server";
 import { badRequest } from "~/utils/request.server";
-import { requireUserId, storage } from "~/utils/session.server";
+import { requireUserId, getUserId } from "~/utils/session.server";
 
 function validateJokeContent(content: string) {
   if (content.length < 10) {
@@ -18,8 +18,19 @@ function validateJokeName(name: string) {
   }
 }
 
+export async function loader({ request }: LoaderArgs) {
+  const jokesterId = await getUserId(request);
+
+  if (!jokesterId) {
+    throw new Response("Uh oh, you're not logged in!", {
+      status: 401,
+    });
+  }
+  return json({});
+}
+
 export const action = async ({ request }: ActionArgs) => {
-  const jokesterId = await requireUserId(request)
+  const jokesterId = await requireUserId(request);
   const form = await request.formData();
   const name = form.get("name");
   const content = form.get("content");
@@ -35,8 +46,7 @@ export const action = async ({ request }: ActionArgs) => {
     name: validateJokeName(name),
     content: validateJokeContent(content),
   };
-  
-  
+
   const fields = { name, content, jokesterId };
   if (Object.values(fieldErrors).some(Boolean)) {
     return badRequest({
@@ -120,5 +130,18 @@ export function ErrorBoundary() {
     <div className="error-container">
       <p>Something unexpected went wrong. Sorry about that.</p>
     </div>
-  )
+  );
+}
+
+export function CatchBoundary() {
+  const caught = useCatch();
+
+  if (caught.status === 401) {
+    return (
+      <div className="error-container">
+        Uh oh you're not logged in. Head over <Link to="/login">here</Link> to
+        fix that
+      </div>
+    );
+  }
 }

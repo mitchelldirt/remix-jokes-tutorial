@@ -23,7 +23,7 @@ export default function JokesRoute() {
       <main className="jokes-main">
         <div className="container">
           <div className="jokes-list">
-            <Link to=".">Get a random joke</Link>
+            <Link to="jokes">Get a random joke</Link>
             <p>Here are a few more jokes to check out:</p>
             <ul>
               <li>
