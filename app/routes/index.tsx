@@ -1,10 +1,18 @@
 import type { LinksFunction } from "@remix-run/node";
 import { Outlet, Link } from "@remix-run/react";
-
 import stylesUrl from "~/styles/jokes.css";
+import type { MetaFunction } from "@remix-run/node";
 
 export const links: LinksFunction = () => {
   return [{ rel: "stylesheet", href: stylesUrl }];
+};
+
+export const meta: MetaFunction = () => {
+  return {
+    title: "Something cool",
+    description:
+      "This becomes the nice preview on search results.",
+  };
 };
 
 export default function JokesRoute() {
@@ -27,7 +35,7 @@ export default function JokesRoute() {
             <p>Here are a few more jokes to check out:</p>
             <ul>
               <li>
-                <Link to="some-joke-id">Hippo</Link>
+                <Link to="jokes/dcf1fe24-ea5b-4ddd-bc05-3f78f9cf428f">Hippo</Link>
               </li>
             </ul>
             <Link to="/jokes/new" className="button">

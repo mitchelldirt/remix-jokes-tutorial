@@ -1,9 +1,24 @@
-import { ActionArgs, LoaderArgs, redirect } from "@remix-run/node";
+import { redirect } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Link, useLoaderData, useParams, useCatch } from "@remix-run/react";
-
+import { useLoaderData, useParams, useCatch } from "@remix-run/react";
 import { db } from "~/utils/db.server";
 import { getUserId } from "~/utils/session.server";
+import { JokeDisplay } from "~/components/joke";
+
+import type { ActionArgs, LoaderArgs, MetaFunction } from "@remix-run/node";
+
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  if (!data) {
+    return {
+      title: "No joke found",
+      description: "No joke found",
+    };
+  }
+  return {
+    title: `Funny ${data.joke.name} joke :)!`,
+    description: `Enjoy this funny joke about ${data.joke.name}`,
+  };
+};
 
 export const loader = async ({ params, request }: LoaderArgs) => {
   const currentUserId = await getUserId(request);
@@ -15,49 +30,38 @@ export const loader = async ({ params, request }: LoaderArgs) => {
       status: 404,
     });
   }
-  return json({ joke, currentUserId });
+  return json({ joke, isOwner: currentUserId === joke.jokesterId });
 };
 
 export async function action({ request }: ActionArgs) {
   const form = await request.formData();
   const intent = form.get("intent");
-  const jokeId = form.get("jokeId")
+  const jokeId = form.get("jokeId");
 
-  if (typeof intent !== 'string' || typeof jokeId !== 'string') {
+  if (typeof intent !== "string" || typeof jokeId !== "string") {
     return null;
   }
 
-  if (intent === 'delete') {
+  if (intent === "delete") {
     await db.joke.delete({
       where: {
-        id: jokeId
-      }
-    })
+        id: jokeId,
+      },
+    });
   }
 
-  return redirect('/jokes')
+  return redirect("/jokes");
 }
 
 export default function JokeRoute() {
   const data = useLoaderData<typeof loader>();
-
+  
   return (
-    <div>
-      <p>Here's your hilarious joke:</p>
-      <p>{data.joke.content}</p>
-      <Link to=".">{data.joke.name} Permalink</Link>
-      {data.currentUserId === data.joke.jokesterId ? (
-        <>
-          <form method="post">
-            <input name='jokeId' type='hidden' value={data.joke.id}></input>
-            <button className="button" name="intent" type="submit" value="delete">
-              Delete
-            </button>
-          </form>
-        </>
-      ) : null}
-    </div>
-  );
+    <JokeDisplay 
+    isOwner={data.isOwner}
+    joke={data.joke}
+    />
+  )
 }
 
 export function ErrorBoundary() {

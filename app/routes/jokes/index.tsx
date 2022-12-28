@@ -1,6 +1,5 @@
 import { json } from "@remix-run/node";
 import { Link, useLoaderData, useCatch } from "@remix-run/react";
-
 import { db } from "~/utils/db.server";
 
 export const loader = async () => {
